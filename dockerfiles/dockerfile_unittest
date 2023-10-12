@@ -1,0 +1,17 @@
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
+
+# Set the working directory in the container to /app
+WORKDIR /app
+
+# Add the current directory contents into the container at /app
+ADD . /app
+COPY ./test-requirements.txt /app/test-requirements.txt
+COPY ./src/generate_features.py /app/src/generate_features.py
+COPY ./tests/test_generate_features.py /app/tests/test_generate_features.py
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r test-requirements.txt
+
+# Run pytest when the container launches
+CMD ["pytest", "tests/test_generate_features.py"]

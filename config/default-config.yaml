@@ -1,0 +1,71 @@
+run_config:
+  name: random-forest-featset-1
+  author: Siche Chen
+  version: default
+  description: Classifies clouds into one of two types.
+  dependencies: requirements.txt
+  data_source: https://archive.ics.uci.edu/ml/machine-learning-databases/undocumented/taylor/cloud.data
+  output: runs
+
+create_dataset:
+  columns:
+    - visible_mean
+    - visible_max
+    - visible_min
+    - visible_mean_distribution
+    - visible_contrast
+    - visible_entropy
+    - visible_second_angular_momentum
+    - IR_mean
+    - IR_max
+    - IR_min
+  class_1: [53, 1077]
+  class_2: [1082, 2105]
+
+generate_features:
+  calculate_norm_range:
+    IR_norm_range:
+      min_col: IR_min
+      max_col: IR_max
+      mean_col: IR_mean
+  log_transform:
+    log_entropy: visible_entropy
+  multiply:
+    entropy_x_contrast:
+      col_a: visible_contrast
+      col_b: visible_entropy
+  calculate_range:
+    IR_range:
+      min_col: IR_min
+      max_col: IR_max
+
+
+train_model:
+  test_size: 0.4
+  classifier: sklearn.ensemble.RandomForestClassifier
+  n_estimators: 20
+  max_depth: 5
+  initial_features:
+    - log_entropy
+    - IR_norm_range
+    - entropy_x_contrast
+
+score_model:
+  predict_proba: True
+  initial_features:
+    - log_entropy
+    - IR_norm_range
+    - entropy_x_contrast
+
+evaluate_performance:
+  metrics:
+    - roc_auc_score
+    - confusion_matrix
+    - accuracy_score
+    - classification_report
+
+aws:
+  upload: True
+  bucket_name: scn3674-test-0
+  prefix: experiments_v2
+
